@@ -19,7 +19,7 @@ class Message {
 	 * @param  Swift_Message  $swift
 	 * @return void
 	 */
-	public function __construct(Swift_Message $swift)
+	public function __construct($swift)
 	{
 		$this->swift = $swift;
 	}
@@ -144,7 +144,7 @@ class Message {
 	{
 		$attachment = $this->createAttachmentFromPath($file);
 
-		return $this->prepAttachment($attachment);
+		return $this->prepAttachment($attachment, $options);
 	}
 
 	/**
@@ -237,9 +237,10 @@ class Message {
 	 * Prepare and attach the given attachment.
 	 *
 	 * @param  Swift_Attachment  $attachment
+	 * @param  array  $options
 	 * @return Illuminate\Mail\Message
 	 */
-	protected function prepAttachment($attachment)
+	protected function prepAttachment($attachment, $options = array())
 	{
 		// First we will check for a MIME type on the message, which instructs the
 		// mail client on what type of attachment the file is so that it may be
