@@ -90,4 +90,35 @@ class Mailer {
 		return $message;
 	}
 
+	/**
+	 * Get the view environment instance.
+	 *
+	 * @return Illuminate\View\Environment
+	 */
+	public function getViewEnvironment()
+	{
+		return $this->views;
+	}
+
+	/**
+	 * Get the Swift Mailer instance.
+	 *
+	 * @return Swift_Mailer
+	 */
+	public function getSwiftMailer()
+	{
+		return $this->swift;
+	}
+
+	/**
+	 * Set the Swift Mailer instance.
+	 *
+	 * @param  Swift_Mailer  $swift
+	 * @return void
+	 */
+	public function setSwiftMailer($swift)
+	{
+		$this->swift = $swift;
+	}
+
 }
