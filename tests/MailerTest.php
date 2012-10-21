@@ -28,6 +28,30 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testMailerCanResolveMailerClasses()
+	{
+		$mailer = $this->getMock('Illuminate\Mail\Mailer', array('createMessage'), $this->getMocks());
+		$message = m::mock('StdClass');
+		$mailer->expects($this->once())->method('createMessage')->will($this->returnValue($message));
+		$view = m::mock('StdClass');
+		$container = new Illuminate\Container;
+		$mailer->setContainer($container);
+		$mockMailer = m::mock('StdClass');
+		$container['FooMailer'] = $container->share(function() use ($mockMailer)
+		{
+			return $mockMailer;
+		});
+		$mockMailer->shouldReceive('mail')->once()->with($message);
+		$mailer->getViewEnvironment()->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
+		$view->shouldReceive('render')->once()->andReturn('rendered.view');
+		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
+		$message->shouldReceive('setFrom')->never();
+		$mailer->setSwiftMailer(m::mock('StdClass'));
+		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with($message);
+		$mailer->send('foo', array('data'), 'FooMailer');
+	}
+
+
 	public function testGlobalFromIsRespectedOnAllMessages()
 	{
 		unset($_SERVER['__mailer.test']);
