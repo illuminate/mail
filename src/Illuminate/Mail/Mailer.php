@@ -3,6 +3,7 @@
 use Closure;
 use Swift_Mailer;
 use Swift_Message;
+use Illuminate\Container;
 use Illuminate\View\Environment as ViewEnvironment;
 
 class Mailer {
@@ -20,6 +21,13 @@ class Mailer {
 	 * @var array
 	 */
 	protected $from;
+
+	/**
+	 * The IoC container instance.
+	 *
+	 * @var Illuminate\Container
+	 */
+	protected $container;
 
 	/**
 	 * Create a new Mailer instance.
@@ -51,14 +59,14 @@ class Mailer {
 	 *
 	 * @param  string   $view
 	 * @param  array    $data
-	 * @param  Closure  $callback
+	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function send($view, array $data = array(), Closure $callback)
+	public function send($view, array $data = array(), $callback)
 	{
 		$data['message'] = $message = $this->createMessage();
 
-		call_user_func($callback, $message);
+		$this->callMessageBuilder($callback, $message);
 
 		// Once we have retrieved the view content for the e-mail we will set the body
 		// of this message using the HTML type, which will provide a simple wrapper
@@ -68,6 +76,27 @@ class Mailer {
 		$message->setBody($content, 'text/html');
 
 		return $this->swift->send($message);
+	}
+
+	/**
+	 * Call the provided message builder.
+	 *
+	 * @param  Closure|string  $callback
+	 * @param  Illuminate\Mail\Message  $message
+	 * @return void
+	 */
+	protected function callMessageBuilder($callback, $message)
+	{
+		if ($callback instanceof Closure)
+		{
+			return call_user_func($callback, $message);
+		}
+		elseif (is_string($callback))
+		{
+			return $this->container[$callback]->mail($message);
+		}
+
+		throw new \InvalidArgumentException("Callback is not valid.");
 	}
 
 	/**
@@ -119,6 +148,17 @@ class Mailer {
 	public function setSwiftMailer($swift)
 	{
 		$this->swift = $swift;
+	}
+
+	/**
+	 * Set the IoC container instance.
+	 *
+	 * @param  Illuminate\Container  $container
+	 * @return void
+	 */
+	public function setContainer(Container $container)
+	{
+		$this->container = $container;
 	}
 
 }
