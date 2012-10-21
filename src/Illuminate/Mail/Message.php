@@ -193,18 +193,7 @@ class Message {
 	 */
 	public function embed($file)
 	{
-		return $this->swift->embed($this->createImageFromPath($file));
-	}
-
-	/**
-	 * Create a new Swift Image instance.
-	 *
-	 * @param  string  $file
-	 * @return Swift_Instance
-	 */
-	protected function createImageFromPath($file)
-	{
-		return Swift_Image::fromPath($file);
+		return $this->swift->embed(Swift_Image::fromPath($file));
 	}
 
 	/**
@@ -217,20 +206,9 @@ class Message {
 	 */
 	public function embedData($data, $name, $contentType = null)
 	{
-		return $this->swift->embed($this->createImageFromData($data, $name, $contentType));
-	}
+		$image = Swift_Image::newInstance($data, $name, $contentType);
 
-	/**
-	 * Create a new Swift Image instance from data.
-	 *
-	 * @param  string  $data
-	 * @param  string  $name
-	 * @param  string  $contentType
-	 * @return Swift_Image
-	 */
-	protected function createImageFromData($data, $name, $contentType)
-	{
-		return Swift_Image::newInstance($data, $name, $contentType);
+		return $this->swift->embed($image);
 	}
 
 	/**
@@ -282,7 +260,9 @@ class Message {
 	 */
 	public function __call($method, $parameters)
 	{
-		return call_user_func_array(array($this->swift, $method), $parameters);
+		$callable = array($this->swift, $method);
+
+		return call_user_func_array($callable, $parameters);
 	}
 
 }
