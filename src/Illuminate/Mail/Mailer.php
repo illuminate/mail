@@ -55,6 +55,20 @@ class Mailer {
 	}
 
 	/**
+	 * Send a new message via a given view driver.
+	 *
+	 * @param  string  $driver
+	 * @param  string  $view
+	 * @param  array   $data
+	 * @param  Closure|string  $callback
+	 * @return void
+	 */
+	public function sendUsing($driver, $view, array $data = array(), $callback)
+	{
+		return $this->send($view, $data, $callback, $driver);
+	}
+
+	/**
 	 * Send a new message using a view.
 	 *
 	 * @param  string   $view
