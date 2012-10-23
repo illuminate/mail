@@ -4,14 +4,14 @@ use Closure;
 use Swift_Mailer;
 use Swift_Message;
 use Illuminate\Container;
-use Illuminate\View\Environment as ViewEnvironment;
+use Illuminate\Support\Manager;
 
 class Mailer {
 
 	/**
-	 * The view environment instance.
+	 * The view manager instance.
 	 *
-	 * @var Illuminate\View\Environment
+	 * @var Illuminate\Support\Manager
 	 */
 	protected $views;
 
@@ -32,11 +32,11 @@ class Mailer {
 	/**
 	 * Create a new Mailer instance.
 	 *
-	 * @param  Illuminate\View\Environment  $views
+	 * @param  Illuminate\Support\Manager  $views
 	 * @param  Swift_Mailer  $mailer
 	 * @return void
 	 */
-	public function __construct(ViewEnvironment $views, Swift_Mailer $swift)
+	public function __construct(Manager $views, Swift_Mailer $swift)
 	{
 		$this->views = $views;
 		$this->swift = $swift;
@@ -60,9 +60,10 @@ class Mailer {
 	 * @param  string   $view
 	 * @param  array    $data
 	 * @param  Closure|string  $callback
+	 * @param  string   $driver
 	 * @return void
 	 */
-	public function send($view, array $data = array(), $callback)
+	public function send($view, array $data = array(), $callback, $driver = null)
 	{
 		$data['message'] = $message = $this->createMessage();
 
@@ -71,11 +72,11 @@ class Mailer {
 		// Once we have retrieved the view content for the e-mail we will set the body
 		// of this message using the HTML type, which will provide a simple wrapper
 		// to creating view based emails that are able to receive arrays of data.
-		$content = $this->views->make($view, $data)->render();
+		$content = $this->getView($driver, $view, $data);
 
 		$message->setBody($content, 'text/html');
 
-		return $this->swift->send($message);
+		return $this->swift->send($message->getSwiftMessage());
 	}
 
 	/**
@@ -120,11 +121,24 @@ class Mailer {
 	}
 
 	/**
+	 * Render the given view using the given driver.
+	 *
+	 * @param  string  $driver
+	 * @param  string  $view
+	 * @param  array   $data
+	 * @return Illuminate\View\View
+	 */
+	protected function getView($driver, $view, $data)
+	{
+		return $this->views->driver($driver)->make($view, $data)->render();
+	}
+
+	/**
 	 * Get the view environment instance.
 	 *
 	 * @return Illuminate\View\Environment
 	 */
-	public function getViewEnvironment()
+	public function getViewManager()
 	{
 		return $this->views;
 	}

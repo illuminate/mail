@@ -17,11 +17,14 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 		$message = m::mock('StdClass');
 		$mailer->expects($this->once())->method('createMessage')->will($this->returnValue($message));
 		$view = m::mock('StdClass');
-		$mailer->getViewEnvironment()->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
+		$viewDriver = m::mock('StdClass');
+		$mailer->getViewManager()->shouldReceive('driver')->once()->with(null)->andReturn($viewDriver);
+		$viewDriver->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
 		$view->shouldReceive('render')->once()->andReturn('rendered.view');
 		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
 		$message->shouldReceive('setFrom')->never();
 		$mailer->setSwiftMailer(m::mock('StdClass'));
+		$message->shouldReceive('getSwiftMessage')->once()->andReturn($message);
 		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with($message);
 		$mailer->send('foo', array('data'), function($m) { $_SERVER['__mailer.test'] = $m; });
 		unset($_SERVER['__mailer.test']);
@@ -42,11 +45,14 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 			return $mockMailer;
 		});
 		$mockMailer->shouldReceive('mail')->once()->with($message);
-		$mailer->getViewEnvironment()->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
+		$viewDriver = m::mock('StdClass');
+		$mailer->getViewManager()->shouldReceive('driver')->once()->with(null)->andReturn($viewDriver);
+		$viewDriver->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
 		$view->shouldReceive('render')->once()->andReturn('rendered.view');
 		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
 		$message->shouldReceive('setFrom')->never();
 		$mailer->setSwiftMailer(m::mock('StdClass'));
+		$message->shouldReceive('getSwiftMessage')->once()->andReturn($message);
 		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with($message);
 		$mailer->send('foo', array('data'), 'FooMailer');
 	}
@@ -57,12 +63,14 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 		unset($_SERVER['__mailer.test']);
 		$mailer = $this->getMailer();
 		$view = m::mock('StdClass');
-		$mailer->getViewEnvironment()->shouldReceive('make')->once()->andReturn($view);
+		$viewDriver = m::mock('StdClass');
+		$mailer->getViewManager()->shouldReceive('driver')->once()->with(null)->andReturn($viewDriver);
+		$viewDriver->shouldReceive('make')->once()->andReturn($view);
 		$view->shouldReceive('render')->once()->andReturn('rendered.view');
 		$mailer->setSwiftMailer(m::mock('StdClass'));
 		$mailer->alwaysFrom('taylorotwell@gmail.com', 'Taylor Otwell');
 		$me = $this;
-		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with(m::type('Illuminate\Mail\Message'))->andReturnUsing(function($message) use ($me)
+		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with(m::type('Swift_Message'))->andReturnUsing(function($message) use ($me)
 		{
 			$me->assertEquals(array('taylorotwell@gmail.com' => 'Taylor Otwell'), $message->getFrom());
 		});
@@ -72,13 +80,13 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 
 	protected function getMailer()
 	{
-		return new Illuminate\Mail\Mailer(m::mock('Illuminate\View\Environment'), m::mock('Swift_Mailer'));
+		return new Illuminate\Mail\Mailer(m::mock('Illuminate\Support\Manager'), m::mock('Swift_Mailer'));
 	}
 
 
 	protected function getMocks()
 	{
-		return array(m::mock('Illuminate\View\Environment'), m::mock('Swift_Mailer'));
+		return array(m::mock('Illuminate\Support\Manager'), m::mock('Swift_Mailer'));
 	}
 
 }
