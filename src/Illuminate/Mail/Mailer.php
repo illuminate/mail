@@ -15,6 +15,13 @@ class Mailer {
 	 */
 	protected $views;
 
+    /**
+     * The Swift Mailer instance.
+     *
+     * @var Swift_Mailer
+     */
+    protected $swift;
+
 	/**
 	 * The global from address and name.
 	 *
@@ -33,7 +40,7 @@ class Mailer {
 	 * Create a new Mailer instance.
 	 *
 	 * @param  Illuminate\Support\Manager  $views
-	 * @param  Swift_Mailer  $mailer
+	 * @param  Swift_Mailer                $swift
 	 * @return void
 	 */
 	public function __construct(Manager $views, Swift_Mailer $swift)
