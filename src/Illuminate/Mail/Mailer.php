@@ -40,7 +40,7 @@ class Mailer {
 	 * Create a new Mailer instance.
 	 *
 	 * @param  Illuminate\Support\Manager  $views
-	 * @param  Swift_Mailer                $swift
+	 * @param  Swift_Mailer  $swift
 	 * @return void
 	 */
 	public function __construct(Manager $views, Swift_Mailer $swift)
