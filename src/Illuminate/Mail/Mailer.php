@@ -4,6 +4,7 @@ use Closure;
 use Swift_Mailer;
 use Swift_Message;
 use Illuminate\Container;
+use Illuminate\Log\Writer;
 use Illuminate\Support\Manager;
 
 class Mailer {
@@ -23,11 +24,25 @@ class Mailer {
 	protected $from;
 
 	/**
+	 * The log writer instance.
+	 *
+	 * @var Illuminate\Log\Writer
+	 */
+	protected $logger;
+
+	/**
 	 * The IoC container instance.
 	 *
 	 * @var Illuminate\Container
 	 */
 	protected $container;
+
+	/**
+	 * Indicates if the actual sending is disabled.
+	 *
+	 * @var bool
+	 */
+	protected $pretending = false;
 
 	/**
 	 * Create a new Mailer instance.
@@ -90,7 +105,38 @@ class Mailer {
 
 		$message->setBody($content, 'text/html');
 
-		return $this->swift->send($message->getSwiftMessage());
+		return $this->sendSwiftMessage($message->getSwiftMessage());
+	}
+
+	/**
+	 * Send a Swift Message instance.
+	 *
+	 * @param  Swift_Message  $message
+	 * @return void
+	 */
+	protected function sendSwiftMessage($message)
+	{
+		if ( ! $this->pretending)
+		{
+			return $this->swift->send($message);
+		}
+		elseif (isset($this->logger))
+		{
+			$this->logMessage($message);
+		}
+	}
+
+	/**
+	 * Log that a message was sent.
+	 *
+	 * @param  Swift_Message  $message
+	 * @return void
+	 */
+	protected function logMessage($message)
+	{
+		$emails = implode(', ', array_keys($message->getTo()));
+
+		$this->logger->info("Pretending to mail message to: {$emails}");
 	}
 
 	/**
@@ -148,6 +194,17 @@ class Mailer {
 	}
 
 	/**
+	 * Tell the mailer to not really send messages.
+	 *
+	 * @param  bool  $value
+	 * @return void
+	 */
+	public function pretend($value = true)
+	{
+		$this->pretending = $value;
+	}
+
+	/**
 	 * Get the view environment instance.
 	 *
 	 * @return Illuminate\View\Environment
@@ -176,6 +233,17 @@ class Mailer {
 	public function setSwiftMailer($swift)
 	{
 		$this->swift = $swift;
+	}
+
+	/**
+	 * Set the log writer instance.
+	 *
+	 * @param  Illuminate\Log\Writer  $logger
+	 * @return void
+	 */
+	public function setLogger(Writer $logger)
+	{
+		$this->logger = $logger;
 	}
 
 	/**

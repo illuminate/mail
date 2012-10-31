@@ -31,6 +31,31 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testMessagesCanBeLoggedInsteadOfSent()
+	{
+		$mailer = $this->getMock('Illuminate\Mail\Mailer', array('createMessage'), $this->getMocks());
+		$message = m::mock('StdClass');
+		$mailer->expects($this->once())->method('createMessage')->will($this->returnValue($message));
+		$view = m::mock('StdClass');
+		$viewDriver = m::mock('StdClass');
+		$mailer->getViewManager()->shouldReceive('driver')->once()->with(null)->andReturn($viewDriver);
+		$viewDriver->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
+		$view->shouldReceive('render')->once()->andReturn('rendered.view');
+		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
+		$message->shouldReceive('setFrom')->never();
+		$mailer->setSwiftMailer(m::mock('StdClass'));
+		$message->shouldReceive('getTo')->once()->andReturn(array('taylor@userscape.com' => 'Taylor'));
+		$message->shouldReceive('getSwiftMessage')->once()->andReturn($message);
+		$mailer->getSwiftMailer()->shouldReceive('send')->never();
+		$logger = m::mock('Illuminate\Log\Writer');
+		$logger->shouldReceive('info')->once()->with('Pretending to mail message to: taylor@userscape.com');
+		$mailer->setLogger($logger);
+		$mailer->pretend();
+
+		$mailer->send('foo', array('data'), function($m) {});
+	}
+
+
 	public function testMailerCanResolveMailerClasses()
 	{
 		$mailer = $this->getMock('Illuminate\Mail\Mailer', array('createMessage'), $this->getMocks());
