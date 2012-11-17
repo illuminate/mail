@@ -101,6 +101,8 @@ class Mailer {
 	 */
 	public function send($view, array $data = array(), $callback, $driver = null)
 	{
+		if (is_array($view)) list($view, $plain) = $view;
+
 		$data['message'] = $message = $this->createMessage();
 
 		$this->callMessageBuilder($callback, $message);
@@ -111,6 +113,11 @@ class Mailer {
 		$content = $this->getView($driver, $view, $data);
 
 		$message->setBody($content, 'text/html');
+
+		if (isset($plain))
+		{
+			$message->addPart($this->getView($driver, $plain, $data), 'text/plain');
+		}
 
 		return $this->sendSwiftMessage($message->getSwiftMessage());
 	}

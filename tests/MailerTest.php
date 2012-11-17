@@ -31,6 +31,29 @@ class MailerTest extends PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testMailerSendSendsMessageWithProperPlainViewContent()
+	{
+		unset($_SERVER['__mailer.test']);
+		$mailer = $this->getMock('Illuminate\Mail\Mailer', array('createMessage'), $this->getMocks());
+		$message = m::mock('StdClass');
+		$mailer->expects($this->once())->method('createMessage')->will($this->returnValue($message));
+		$view = m::mock('StdClass');
+		$viewDriver = m::mock('StdClass');
+		$mailer->getViewManager()->shouldReceive('driver')->with(null)->andReturn($viewDriver);
+		$viewDriver->shouldReceive('make')->once()->with('foo', array('data', 'message' => $message))->andReturn($view);
+		$viewDriver->shouldReceive('make')->once()->with('bar', array('data', 'message' => $message))->andReturn($view);
+		$view->shouldReceive('render')->twice()->andReturn('rendered.view');
+		$message->shouldReceive('setBody')->once()->with('rendered.view', 'text/html');
+		$message->shouldReceive('addPart')->once()->with('rendered.view', 'text/plain');
+		$message->shouldReceive('setFrom')->never();
+		$mailer->setSwiftMailer(m::mock('StdClass'));
+		$message->shouldReceive('getSwiftMessage')->once()->andReturn($message);
+		$mailer->getSwiftMailer()->shouldReceive('send')->once()->with($message);
+		$mailer->send(array('foo', 'bar'), array('data'), function($m) { $_SERVER['__mailer.test'] = $m; });
+		unset($_SERVER['__mailer.test']);
+	}
+
+
 	public function testMessagesCanBeLoggedInsteadOfSent()
 	{
 		$mailer = $this->getMock('Illuminate\Mail\Mailer', array('createMessage'), $this->getMocks());
