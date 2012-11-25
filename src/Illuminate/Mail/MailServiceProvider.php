@@ -9,14 +9,13 @@ class MailServiceProvider extends ServiceProvider {
 	/**
 	 * Register the service provider.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	public function register($app)
+	public function register()
 	{
-		$this->registerSwiftMailer($app);
+		$this->registerSwiftMailer();
 
-		$app['mailer'] = $app->share(function($app)
+		$this->app['mailer'] = $this->app->share(function($app)
 		{
 			// Once we have create the mailer instance, we will set a container instance
 			// on the mailer. This allows us to resolve mailer classes via containers
@@ -44,19 +43,18 @@ class MailServiceProvider extends ServiceProvider {
 	/**
 	 * Register the Swift Mailer instance.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @return void
 	 */
-	protected function registerSwiftMailer($app)
+	protected function registerSwiftMailer()
 	{
-		$config = $app['config']['mail'];
+		$config = $this->app['config']['mail'];
 
-		$this->registerSwiftTransport($app, $config);
+		$this->registerSwiftTransport($config);
 
 		// Once we have the transporter registered, we will register the actual Swift
 		// mailer instance, passing in the transport instances, which allows us to
 		// override this transporter instances during app start-up if necessary.
-		$app['swift.mailer'] = $app->share(function($app)
+		$this->app['swift.mailer'] = $this->app->share(function($app)
 		{
 			return new Swift_Mailer($app['swift.transport']);
 		});
@@ -65,13 +63,12 @@ class MailServiceProvider extends ServiceProvider {
 	/**
 	 * Register the Swift Transport instance.
 	 *
-	 * @param  Illuminate\Foundation\Application  $app
 	 * @param  array  $config
 	 * @return void
 	 */
-	protected function registerSwiftTransport($app, $config)
+	protected function registerSwiftTransport($config)
 	{
-		$app['swift.transport'] = $app->share(function($app) use ($config)
+		$this->app['swift.transport'] = $this->app->share(function($app) use ($config)
 		{
 			extract($config);
 
