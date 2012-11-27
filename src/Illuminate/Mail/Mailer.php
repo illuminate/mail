@@ -5,14 +5,14 @@ use Swift_Mailer;
 use Swift_Message;
 use Illuminate\Container;
 use Illuminate\Log\Writer;
-use Illuminate\Support\Manager;
+use Illuminate\View\Environment;
 
 class Mailer {
 
 	/**
-	 * The view manager instance.
+	 * The view environment instance.
 	 *
-	 * @var Illuminate\Support\Manager
+	 * @var Illuminate\View\Environment
 	 */
 	protected $views;
 
@@ -54,11 +54,11 @@ class Mailer {
 	/**
 	 * Create a new Mailer instance.
 	 *
-	 * @param  Illuminate\Support\Manager  $views
+	 * @param  Illuminate\View\Environment  $views
 	 * @param  Swift_Mailer  $swift
 	 * @return void
 	 */
-	public function __construct(Manager $views, Swift_Mailer $swift)
+	public function __construct(Environment $views, Swift_Mailer $swift)
 	{
 		$this->views = $views;
 		$this->swift = $swift;
@@ -77,29 +77,14 @@ class Mailer {
 	}
 
 	/**
-	 * Send a new message via a given view driver.
-	 *
-	 * @param  string  $driver
-	 * @param  string  $view
-	 * @param  array   $data
-	 * @param  Closure|string  $callback
-	 * @return void
-	 */
-	public function sendUsing($driver, $view, array $data = array(), $callback)
-	{
-		return $this->send($view, $data, $callback, $driver);
-	}
-
-	/**
 	 * Send a new message using a view.
 	 *
 	 * @param  string   $view
 	 * @param  array    $data
 	 * @param  Closure|string  $callback
-	 * @param  string   $driver
 	 * @return void
 	 */
-	public function send($view, array $data = array(), $callback, $driver = null)
+	public function send($view, array $data = array(), $callback)
 	{
 		if (is_array($view)) list($view, $plain) = $view;
 
@@ -110,13 +95,13 @@ class Mailer {
 		// Once we have retrieved the view content for the e-mail we will set the body
 		// of this message using the HTML type, which will provide a simple wrapper
 		// to creating view based emails that are able to receive arrays of data.
-		$content = $this->getView($driver, $view, $data);
+		$content = $this->getView($view, $data);
 
 		$message->setBody($content, 'text/html');
 
 		if (isset($plain))
 		{
-			$message->addPart($this->getView($driver, $plain, $data), 'text/plain');
+			$message->addPart($this->getView($plain, $data), 'text/plain');
 		}
 
 		return $this->sendSwiftMessage($message->getSwiftMessage());
@@ -195,16 +180,15 @@ class Mailer {
 	}
 
 	/**
-	 * Render the given view using the given driver.
+	 * Render the given view.
 	 *
-	 * @param  string  $driver
 	 * @param  string  $view
 	 * @param  array   $data
 	 * @return Illuminate\View\View
 	 */
-	protected function getView($driver, $view, $data)
+	protected function getView($view, $data)
 	{
-		return $this->views->driver($driver)->make($view, $data)->render();
+		return $this->views->make($view, $data)->render();
 	}
 
 	/**
@@ -223,7 +207,7 @@ class Mailer {
 	 *
 	 * @return Illuminate\View\Environment
 	 */
-	public function getViewManager()
+	public function getViewEnvironment()
 	{
 		return $this->views;
 	}
