@@ -16,12 +16,12 @@ class Mailer {
 	 */
 	protected $views;
 
-    /**
-     * The Swift Mailer instance.
-     *
-     * @var Swift_Mailer
-     */
-    protected $swift;
+	/**
+	 * The Swift Mailer instance.
+	 *
+	 * @var Swift_Mailer
+	 */
+	protected $swift;
 
 	/**
 	 * The global from address and name.
@@ -79,12 +79,12 @@ class Mailer {
 	/**
 	 * Send a new message using a view.
 	 *
-	 * @param  string   $view
-	 * @param  array    $data
+	 * @param  string|array    $view
+	 * @param  array           $data
 	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function send($view, array $data = array(), $callback)
+	public function send($view, array $data, $callback)
 	{
 		if (is_array($view)) list($view, $plain) = $view;
 
