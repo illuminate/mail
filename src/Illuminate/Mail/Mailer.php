@@ -84,7 +84,7 @@ class Mailer {
 	 * @param  Closure|string  $callback
 	 * @return void
 	 */
-	public function send($view, array $data = array(), $callback)
+	public function send($view, array $data, $callback)
 	{
 		if (is_array($view)) list($view, $plain) = $view;
 
