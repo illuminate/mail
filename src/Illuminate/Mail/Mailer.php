@@ -16,12 +16,12 @@ class Mailer {
 	 */
 	protected $views;
 
-    /**
-     * The Swift Mailer instance.
-     *
-     * @var Swift_Mailer
-     */
-    protected $swift;
+	/**
+	 * The Swift Mailer instance.
+	 *
+	 * @var Swift_Mailer
+	 */
+	protected $swift;
 
 	/**
 	 * The global from address and name.
