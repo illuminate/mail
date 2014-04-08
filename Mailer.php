@@ -62,6 +62,13 @@ class Mailer {
 	protected $pretending = false;
 
 	/**
+	 * The QueueManager instance.
+	 *
+	 * @var \Illuminate\Queue\QueueManager
+	 */
+	protected $queue;
+
+	/**
 	 * Array of failed recipients.
 	 *
 	 * @var array
