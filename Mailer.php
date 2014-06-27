@@ -127,9 +127,10 @@ class Mailer {
 	 * @param  string|array  $view
 	 * @param  array  $data
 	 * @param  Closure|string  $callback
+	 * @param  boolean $useView
 	 * @return void
 	 */
-	public function send($view, array $data, $callback)
+	public function send($view, array $data, $callback, $useView = true)
 	{
 		// First we need to parse the view, which could either be a string or an array
 		// containing both an HTML and plain text versions of the view which should
@@ -143,7 +144,10 @@ class Mailer {
 		// Once we have retrieved the view content for the e-mail we will set the body
 		// of this message using the HTML type, which will provide a simple wrapper
 		// to creating view based emails that are able to receive arrays of data.
-		$this->addContent($message, $view, $plain, $data);
+		if ($useView)
+			$this->addContent($message, $view, $plain, $data);
+		else
+			$this->addContent($message, $view, $plain, $data, false);
 
 		$message = $message->getSwiftMessage();
 
@@ -262,19 +266,35 @@ class Mailer {
 	 * @param  string  $view
 	 * @param  string  $plain
 	 * @param  array   $data
+         * @param  boolean $useView
 	 * @return void
 	 */
-	protected function addContent($message, $view, $plain, $data)
+	protected function addContent($message, $view, $plain, $data, $useView = true)
 	{
-		if (isset($view))
+		if ($useView)
 		{
-			$message->setBody($this->getView($view, $data), 'text/html');
-		}
-
-		if (isset($plain))
-		{
-			$message->addPart($this->getView($plain, $data), 'text/plain');
-		}
+			// Parse the view and return the result
+			if (isset($view))
+			{
+				$message->setBody($this->getView($view, $data), 'text/html');
+			}
+			
+			if (isset($plain))
+			{
+				$message->addPart($this->getView($plain, $data), 'text/plain');
+			}
+		}else{
+			// Parse the view and return the result
+	        if (isset($view))
+	        {
+	        	$message->setBody($view, 'text/html');
+	        }
+	        	
+	        if (isset($plain))
+	        {
+	        	$message->addPart($plain, 'text/plain');
+	        }
+	    }
 	}
 
 	/**
