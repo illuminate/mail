@@ -143,7 +143,7 @@ class MailgunTransport extends Transport
     }
 
     /**
-     * Set the domain being used by the transport.
+     * Set the url being used by the transport.
      *
      * @param  string  $domain
      * @return void
