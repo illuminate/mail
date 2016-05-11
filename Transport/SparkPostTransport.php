@@ -58,6 +58,7 @@ class SparkPostTransport extends Transport
                     'subject' => $message->getSubject(),
                 ],
             ],
+            'connect_timeout' => 60,
         ];
 
         $this->client->post('https://api.sparkpost.com/api/v1/transmissions', $options);
