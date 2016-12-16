@@ -64,6 +64,7 @@ class SparkPostTransport extends Transport
                     'email_rfc822' => $message->toString(),
                 ],
             ],
+            'connect_timeout' => 60,
         ];
 
         if ($this->options) {
