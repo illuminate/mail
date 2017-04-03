@@ -3,6 +3,7 @@
 namespace Illuminate\Mail;
 
 use Aws\Ses\SesClient;
+use Illuminate\Mail\Transport\SendGridTransport;
 use Illuminate\Support\Arr;
 use Psr\Log\LoggerInterface;
 use Illuminate\Support\Manager;
@@ -151,6 +152,17 @@ class TransportManager extends Manager
 
         return new SparkPostTransport(
             $this->guzzle($config), $config['secret'], Arr::get($config, 'options', [])
+        );
+    }
+
+    /**
+     * Create an instance of the SendGrid Transport driver.
+     */
+    protected function createSendGridDriver()
+    {
+        $config = $this->app['config']->get('services.sendgrid', []);
+        return new SendGridTransport(
+            $this->guzzle($config), $config['secret']
         );
     }
 
