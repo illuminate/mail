@@ -482,6 +482,8 @@ class Mailer implements MailerContract, MailQueueContract
     {
         try {
             return $this->swift->send($message, $this->failedRecipients);
+        catch (\Exception $e) {
+            // catch all exceptions
         } finally {
             $this->forceReconnection();
         }
